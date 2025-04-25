@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Produits MyTek</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <h1><span><i>My</span>Tek</i> <span><i>T</span>unisianet</i></h1>
+        </div>
+        <ul class="menu">
+            <li><a href="#" class="active">Accueil</a></li>
+            <li><a href="#" class="fa fa-user" aria-hidden="true"></a></li>
+        </ul>
+    </nav>
+
+    <h1 class="produits_texte">Catalogue des ordinateurs portables MyTek & Tunisianet</h1>
+
+    <section class="section_produits">
+        <div class="filters" style="padding: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+            <input type="text" id="marque" placeholder="Marque (ex: Lenovo)">
+            <input type="number" id="prix_min" placeholder="Prix min">
+            <input type="number" id="prix_max" placeholder="Prix max">
+            <select id="processeur">
+                <option value="">Toutes les processeur</option>
+                <option value="Intel Core i3">Intel Core i3</option>
+                <option value="Intel Core i5">Intel Core i5</option>
+                <option value="Intel Core i7">Intel Core i7</option>
+                <option value="Intel Core i9">Intel Core i9</option>
+            </select>
+            
+            <button onclick="filtrer(true)" class="achat">Filtrer</button>
+        </div>
+
+        <div class="produits" id="produits"></div>
+    </section>
+
+    <footer>
+        <p>&copy; <a href="#">MyTek-Tunisianet</a> - Tous droits réservés 2025</p>
+    </footer>
+
+    <script>
+        async function filtrer(estFiltrageManuel=false) {
+            const marque = document.getElementById('marque').value;
+            const prix_min = document.getElementById('prix_min').value;
+            const prix_max = document.getElementById('prix_max').value;
+            const processeur = document.getElementById('processeur').value;
+
+            const params = new URLSearchParams({ marque, prix_min, prix_max, processeur });
+            const res = await fetch('/produits?' + params);
+            const data = await res.json();
+
+            const container = document.getElementById('produits');
+            container.innerHTML = '';
+
+            if (!data || data.length === 0) {
+                if (estFiltrageManuel) {
+                    container.innerHTML = `
+                        <div style="color: red; font-weight: bold; padding: 20px; font-size: 18px; text-align: center;">
+                             Aucun PC trouvé avec les filtres données.
+                        </div>
+                    `;
+                }
+                return;
+            }
+
+            data.forEach(p => {
+                container.innerHTML += `
+                    <div class="carte">
+                        <div class="img"> <img src="${p.Image}" alt="Image produit"></div>
+                        <div class="source-container">
+                            <span class="source">${p.Source}</span> <!-- Nom de la source -->
+                        </div>
+                        <div class="titre">${p.Nom}</div>
+                        <div class="box">
+                             <div class="prix">${p.Prix} DT</div>
+                             <a class="achat" href="${p.Lien}" target="_blank">Voir</a>
+                        </div>  
+                        <div class="disponibilite ${p.Disponibilité.toLowerCase().includes('stock') ? 'en-stock' : p.Disponibilité.toLowerCase().includes('arrivage') ? 'en-arrivage' : 'rupture'}">
+                            ${p.Disponibilité}
+                        </div>
+                    </div>`;
+            });
+        }
+
+        filtrer(false);
+    </script>
+</body>
+</html>
